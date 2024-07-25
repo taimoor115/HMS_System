@@ -2,11 +2,12 @@ import express from "express";
 import { MONGO_URL, PORT } from "./config.js";
 import User from "./model/userModel.js";
 import mongoose from "mongoose";
-import { uploadStorage } from "./middleware/index.js";
+import { uploadStorage } from "./middleware/middleware.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { generateToken } from "./lib/utils/generateToken.js";
 import "dotenv/config";
+import Admin from "./model/adminModel.js";
 
 const app = express();
 
@@ -27,6 +28,24 @@ app.get("/", (req, res) => {
   res.send("Server Working...");
 });
 
+app.post("/admin", async (req, res) => {
+  try {
+    const adminData = req.body;
+    // console.log(adminData);
+
+    const admin = new Admin(adminData);
+    // const accessToken = generateToken(admin._id, res);
+    // admin.access_token = accessToken;
+
+    const savedAdmin = await admin.save();
+    console.log(savedAdmin);
+    return res.json({ message: "Admin Created successfully..." });
+  } catch (err) {
+    console.log(err);
+    return res.sendStatus(500).json({ error: "Server Error" });
+  }
+});
+
 app.post(
   "/register",
   uploadStorage.fields([
@@ -42,14 +61,14 @@ app.post(
       userData.resume = resumePath;
 
       const user = new User(userData);
-      const accessToken = generateToken(user._id, res);
-      user.access_token = accessToken;
+      // const accessToken = generateToken(user._id, res);
+      // user.access_token = accessToken;
       const savedUser = await user.save();
 
-      console.log(savedUser);
-      return res.status(201).json({ message: "User Created successfully..." });
+      // console.log(savedUser);
+      return res.json({ message: "User Created successfully..." });
     } catch (error) {
-      console.log(error);
+      console.log("User", error);
       return res.status(500).json({ error: "Error" });
     }
   }
