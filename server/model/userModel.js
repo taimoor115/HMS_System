@@ -93,6 +93,9 @@ const userSchema = new Schema({
       },
     },
   ],
+  access_token: {
+    type: String,
+  },
 });
 
 userSchema.pre("save", async function (next) {

@@ -3,6 +3,10 @@ import { MONGO_URL, PORT } from "./config.js";
 import User from "./model/userModel.js";
 import mongoose from "mongoose";
 import { uploadStorage } from "./middleware/index.js";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { generateToken } from "./lib/utils/generateToken.js";
+import "dotenv/config";
 
 const app = express();
 
@@ -17,6 +21,7 @@ async function main() {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Server Working...");
@@ -31,16 +36,14 @@ app.post(
   async (req, res) => {
     try {
       const userData = req.body;
-
-      console.log(req.files.profile_picture.filename);
-
       const imagePath = req.files.profile_picture[0].filename;
       const resumePath = req.files.resume[0].filename;
       userData.profile_picture = imagePath;
       userData.resume = resumePath;
 
       const user = new User(userData);
-
+      const accessToken = generateToken(user._id, res);
+      user.access_token = accessToken;
       const savedUser = await user.save();
 
       console.log(savedUser);
