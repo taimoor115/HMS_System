@@ -16,6 +16,7 @@ async function main() {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Server Working...");
@@ -31,8 +32,10 @@ app.post(
     try {
       const userData = req.body;
 
-      const imagePath = req.files.profile_picture[0].path;
-      const resumePath = req.files.resume[0].path;
+      console.log(req.files.profile_picture.filename);
+
+      const imagePath = req.files.profile_picture[0].filename;
+      const resumePath = req.files.resume[0].filename;
       userData.profile_picture = imagePath;
       userData.resume = resumePath;
 
