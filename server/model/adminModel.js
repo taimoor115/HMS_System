@@ -6,14 +6,13 @@ const adminSchema = new Schema({
   },
   email: {
     type: String,
-    unique: [true, "Email must be unique"],
   },
   password: {
     type: String,
-    min: [8, "Password must be greater than 8 characters"],
   },
   role: {
     type: String,
+    default: "admin",
   },
   access_token: {
     type: String,

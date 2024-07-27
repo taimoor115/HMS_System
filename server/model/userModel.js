@@ -44,6 +44,7 @@ const userSchema = new Schema({
   skills: [String],
   role: {
     type: String,
+    default: "user",
   },
   social_media: [
     {
