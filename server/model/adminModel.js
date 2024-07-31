@@ -12,7 +12,7 @@ const adminSchema = new Schema({
   },
   role: {
     type: String,
-    default: "admin",
+    enum: ["ADMIN", "HR", "CONTENT-WRITER"],
   },
   access_token: {
     type: String,

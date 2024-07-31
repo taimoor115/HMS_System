@@ -12,9 +12,10 @@ export const userValidator = Joi.object({
       end_date: Joi.date().required(),
     })
   ),
-  resume: Joi.string().required(),
+  resume: Joi.string(),
   gender: Joi.string().valid("Male", "Female", "Prefer not to say").required(),
   city: Joi.string().required(),
+  skills: Joi.string(),
   role: Joi.string().required(),
   social_media: Joi.array().items(
     Joi.object({
@@ -29,7 +30,7 @@ export const userValidator = Joi.object({
   notice_period: Joi.number().integer(),
   experience: Joi.array().items(
     Joi.object({
-      duration: Joi.string(),
+      duration: Joi.number(),
       designation: Joi.string(),
       company: Joi.string(),
       salary: Joi.number().integer(),

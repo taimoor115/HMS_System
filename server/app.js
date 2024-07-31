@@ -48,6 +48,7 @@ app.post(
   async (req, res) => {
     try {
       const userData = req.body;
+      console.log(userData);
       const imagePath = req.files.profile_picture[0].filename;
       const resumePath = req.files.resume[0].filename;
       userData.profile_picture = imagePath;
@@ -66,18 +67,34 @@ app.post(
 
 app.get("/users/getAllUser", isAdmin, async (req, res) => {
   try {
-    const users = await User.find({});
-    if (!users) {
+    const pageNo = Math.floor(req.query.page) || 0;
+    const limit = Math.floor(req.query.limit) || 12;
+
+    console.log(pageNo, limit);
+
+    if (pageNo < 0 || limit <= 0) {
+      return res.status(400).json({ error: "Invalid page number and limit" });
+    }
+
+    const totalDocuments = await User.find({}).countDocuments();
+    console.log(totalDocuments);
+
+    let skip = pageNo * limit;
+
+    const users = await User.find({}).skip(skip).limit(limit);
+    const totalPage = Math.ceil(totalDocuments / limit);
+
+    if (!users || totalDocuments === 0) {
       return res.status(400).json({ message: "Users not found" });
     }
-    return res.status(201).json({ count: users.length, users: users });
+    return res.status(201).json({ totalPage, data: users });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: error });
   }
 });
 
-app.post("/admin/register", validateAdmin, async (req, res) => {
+app.post("/admin/register", isAdmin, validateAdmin, async (req, res) => {
   try {
     const adminData = req.body;
 
@@ -101,6 +118,7 @@ app.post("/admin/register", validateAdmin, async (req, res) => {
 app.post("/admin/login", validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(req.body);
 
     const admin = await Admin.findOne({ email });
 
@@ -123,7 +141,9 @@ app.post("/admin/login", validateLogin, async (req, res) => {
 
     console.log("Token Admin", token);
 
-    return res.status(200).json({ message: "Login Successfull..." });
+    return res
+      .status(200)
+      .json({ message: "Login Successfull...", access_token: token });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: error });
