@@ -38,16 +38,30 @@ app.get("/", (req, res) => {
 
 app.post(
   "/users/register",
-
+  
   uploadStorage.fields([
     { name: "profile_picture", maxCount: 1 },
     { name: "resume", maxCount: 1 },
   ]),
-
   validateUser,
+  
   async (req, res) => {
     try {
       const userData = req.body;
+
+
+      console.log(userData);
+      
+
+
+      const uniqueEmail = await User.findOne({email: userData.email})
+
+      
+      
+
+      if(uniqueEmail) {
+        return res.status(400).json({error: "Email must be unique"})
+      }
       console.log(userData);
       const imagePath = req.files.profile_picture[0].filename;
       const resumePath = req.files.resume[0].filename;
@@ -60,7 +74,7 @@ app.post(
       return res.json({ message: "User Created successfully..." });
     } catch (error) {
       console.log("User", error);
-      return res.status(500).json({ error: "Error" });
+      return res.status(500).json({ error: "Internal Server error" });
     }
   }
 );
@@ -94,7 +108,7 @@ app.get("/users/getAllUser", isAdmin, async (req, res) => {
   }
 });
 
-app.post("/admin/register", isAdmin, validateAdmin, async (req, res) => {
+app.post("/admin/register", validateAdmin, async (req, res) => {
   try {
     const adminData = req.body;
 
@@ -149,6 +163,13 @@ app.post("/admin/login", validateLogin, async (req, res) => {
     return res.status(500).json({ error: error });
   }
 });
+
+
+
+
+
+
+
 
 app.all((req, res, next) => {
   next(new ExpressError("404", "Page not found"));

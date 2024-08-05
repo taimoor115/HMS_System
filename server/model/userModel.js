@@ -6,9 +6,8 @@ const userSchema = new Schema({
   name: {
     type: String,
   },
-  email: {
+  email: {  
     type: String,
-    unique: [true, "Email should be unique"],
     lowerCase: true,
   },
   profile_picture: {
