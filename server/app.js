@@ -4,6 +4,7 @@ import User from "./model/userModel.js";
 import mongoose from "mongoose";
 import {
   isAdmin,
+  isContentWriter,
   uploadStorage,
   validateAdmin,
   validateLogin,
@@ -16,6 +17,7 @@ import "dotenv/config";
 import Admin from "./model/adminModel.js";
 import ExpressError from "./lib/utils/ExpressError.js";
 import bcrypt from "bcrypt";
+
 
 const app = express();
 
@@ -39,11 +41,11 @@ app.get("/", (req, res) => {
 app.post(
   "/users/register",
   
+  validateUser,
   uploadStorage.fields([
     { name: "profile_picture", maxCount: 1 },
     { name: "resume", maxCount: 1 },
   ]),
-  validateUser,
   
   async (req, res) => {
     try {
@@ -52,13 +54,7 @@ app.post(
 
       console.log(userData);
       
-
-
       const uniqueEmail = await User.findOne({email: userData.email})
-
-      
-      
-
       if(uniqueEmail) {
         return res.status(400).json({error: "Email must be unique"})
       }
@@ -165,7 +161,72 @@ app.post("/admin/login", validateLogin, async (req, res) => {
 });
 
 
+app.post("/users/:id/edit", isContentWriter, uploadStorage.fields([
+  { name: "profile_picture", maxCount: 1 },
+  { name: "resume", maxCount: 1 },
+]), async (req,res) => {
 
+  
+  try {
+    const {id} = req.params;
+    const updatedData = req.body;
+
+    const forbiddenFields = ['email','password'];
+    for(const field of forbiddenFields) {
+      if(updatedData[field]) {
+        return res.status(400).json({error: `You cannot modify ${field} field`})
+      }
+    }
+
+
+    const currentUser = await User.findById(id);
+    if(!currentUser) {
+      return res.status(404).json({error: "User not found"})
+    }
+
+    if (req.files) {
+      if (req.files.profile_picture && req.files.profile_picture[0]) {
+        const newProfilePic = req.files.profile_picture[0].filename;
+        if (currentUser.profile_picture !== newProfilePic) {
+          updatedData.profile_picture = newProfilePic; 
+        }
+      }
+      if (req.files.resume && req.files.resume[0]) {
+        const newResume = req.files.resume[0].filename;
+        if (currentUser.resume !== newResume) {
+          updatedData.resume = newResume;
+        }
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(id, updatedData, {
+      runValidator:true,
+      new:true,
+    });
+
+    const writerId = req.user._id;
+    if(user) {
+      await User.findByIdAndUpdate(id, {
+        $push: {
+          history: {
+            updatedBy: writerId,
+            updatedAt: new Date(),
+            beforeChange: currentUser,
+            afterChange: user
+          }
+        }
+      })
+    }
+
+    return res.status(201).json({message:"User updated successfully"})
+
+  } catch (error) {
+    console.log(error);
+    
+    res.status(500).json(error)
+  }
+  
+})
 
 
 

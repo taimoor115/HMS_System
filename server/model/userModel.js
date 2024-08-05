@@ -96,6 +96,27 @@ const userSchema = new Schema({
   access_token: {
     type: String,
   },
+
+
+  history: [
+    {
+      updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+      updatedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      beforeChange: {
+        type: Schema.Types.Mixed
+      },
+
+      afterChange: {
+        type: Schema.Types.Mixed
+      }
+    }
+  ]
 });
 
 userSchema.pre("save", async function (next) {
