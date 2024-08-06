@@ -161,7 +161,7 @@ app.post("/admin/login", validateLogin, async (req, res) => {
 });
 
 
-app.post("/users/:id/edit", isContentWriter, uploadStorage.fields([
+app.put("/users/:id/edit", isContentWriter, uploadStorage.fields([
   { name: "profile_picture", maxCount: 1 },
   { name: "resume", maxCount: 1 },
 ]), async (req,res) => {
@@ -223,13 +223,57 @@ app.post("/users/:id/edit", isContentWriter, uploadStorage.fields([
   } catch (error) {
     console.log(error);
     
-    res.status(500).json(error)
+    res.status(500).json({error: error})
   }
   
 })
 
 
 
+// app.get("/users/:id/changes", async (req,res) => {
+//   try {
+//     const {id} = req.params;
+//     const user = await User.findById(id)
+//   .select({ history: { $slice: -1 } }) // Retrieve only the last element of the history array
+//   .exec()
+
+//      // Extract the last history entry
+//      const lastHistoryEntry = user.history[0];
+
+//      // Populate the beforeChange field to get all its fields
+//    const users =   await User.populate(lastHistoryEntry, {
+//        path: 'beforeChange' // Populate all fields of the referenced document
+//      });  
+  
+//   console.log("User", users);
+    
+    
+
+//     res.send("working...")
+    
+//   } catch (error) {
+//     console.log(error);
+    
+//   }
+// })
+
+
+
+app.delete("/users/:id", isAdmin, async (req,res) => {
+    try {
+      const {id} = req.params;
+
+      const user = await User.findByIdAndDelete(id);
+      if(!user) {
+        return res.status(400).json({error: "User not found..."});
+      }
+
+      return res.status(200).json({message: "User deleted successfully"})
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({error: error})
+    }
+})
 
 
 app.all((req, res, next) => {
