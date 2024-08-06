@@ -256,6 +256,22 @@ app.delete("/users/:id", isAdmin, async (req,res) => {
     }
 })
 
+app.delete("/users/:id", isAdmin, async (req,res) => {
+  try {
+    const {id} = req.params;
+
+    const user = await Admin.findByIdAndDelete(id);
+    if(!user) {
+      return res.status(400).json({error: "Admin not found..."});
+    }
+
+    return res.status(200).json({message: "Admin deleted successfully"})
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({error: error})
+  }
+})
+
 
 app.all((req, res, next) => {
   next(new ExpressError("404", "Page not found"));
