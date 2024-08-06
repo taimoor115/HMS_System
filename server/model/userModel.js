@@ -108,11 +108,8 @@ const userSchema = new Schema({
         type: Date,
         default: Date.now,
       },
-      beforeChange: {
-        type: Schema.Types.Mixed
-      },
-
-      afterChange: {
+      
+      changedFields: {
         type: Schema.Types.Mixed
       }
     }

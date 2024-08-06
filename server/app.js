@@ -161,101 +161,82 @@ app.post("/admin/login", validateLogin, async (req, res) => {
 });
 
 
-app.put("/users/:id/edit", isContentWriter, uploadStorage.fields([
+app.patch("/users/:id/edit", isContentWriter, uploadStorage.fields([
   { name: "profile_picture", maxCount: 1 },
   { name: "resume", maxCount: 1 },
-]), async (req,res) => {
-
-  
+]), async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const updatedData = req.body;
 
-    const forbiddenFields = ['email','password'];
-    for(const field of forbiddenFields) {
-      if(updatedData[field]) {
-        return res.status(400).json({error: `You cannot modify ${field} field`})
-      }
+    const allowedFields = ['about_me', 'city'];
+    const invalidFields = Object.keys(updatedData).filter(field => !allowedFields.includes(field));
+
+    if (invalidFields.length > 0) {
+      return res.status(400).json({ message: "You can only modify about_me, city fields" });
     }
-
-
     const currentUser = await User.findById(id);
-    if(!currentUser) {
-      return res.status(404).json({error: "User not found"})
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" });
     }
 
-    if (req.files) {
-      if (req.files.profile_picture && req.files.profile_picture[0]) {
-        const newProfilePic = req.files.profile_picture[0].filename;
-        if (currentUser.profile_picture !== newProfilePic) {
-          updatedData.profile_picture = newProfilePic; 
-        }
+    const changedFields = {};
+
+    allowedFields.forEach(field => {
+      if (updatedData[field] !== undefined && currentUser[field] !== updatedData[field]) {
+        changedFields[field] = {
+          oldValue: currentUser[field],
+          newValue: updatedData[field]
+        };
       }
-      if (req.files.resume && req.files.resume[0]) {
-        const newResume = req.files.resume[0].filename;
-        if (currentUser.resume !== newResume) {
-          updatedData.resume = newResume;
-        }
-      }
+    });
+    if (Object.keys(changedFields).length === 0) {
+      return res.status(200).json({ message: "No changes detected" });
     }
 
-    const user = await User.findByIdAndUpdate(id, updatedData, {
-      runValidator:true,
-      new:true,
+    
+    const updatedUser = await User.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true
     });
 
+    
     const writerId = req.user._id;
-    if(user) {
-      await User.findByIdAndUpdate(id, {
-        $push: {
-          history: {
-            updatedBy: writerId,
-            updatedAt: new Date(),
-            beforeChange: currentUser,
-            afterChange: user
-          }
+    await User.findByIdAndUpdate(id, {
+      $push: {
+        history: {
+          updatedBy: writerId,
+          updatedAt: new Date(),
+          changedFields
         }
-      })
-    }
+      }
+    });
 
-    return res.status(201).json({message:"User updated successfully"})
+    return res.status(200).json({ message: "User updated successfully" });
 
   } catch (error) {
     console.log(error);
-    
-    res.status(500).json({error: error})
+    res.status(500).json({ error: error.message });
   }
-  
+});
+
+
+app.get("/users/:id/history", isAdmin, async(req, res) => {
+  try {
+    const {id} = req.params;
+
+    const user = await User.findById(id)
+    .populate("history.changedFields")
+    console.log("User", user.history[0].changedFields);
+
+    const length = user.history.length - 1;
+    const history = user.history[length].changedFields;
+    return res.status(200).json({history})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({error})
+  }
 })
-
-
-
-// app.get("/users/:id/changes", async (req,res) => {
-//   try {
-//     const {id} = req.params;
-//     const user = await User.findById(id)
-//   .select({ history: { $slice: -1 } }) // Retrieve only the last element of the history array
-//   .exec()
-
-//      // Extract the last history entry
-//      const lastHistoryEntry = user.history[0];
-
-//      // Populate the beforeChange field to get all its fields
-//    const users =   await User.populate(lastHistoryEntry, {
-//        path: 'beforeChange' // Populate all fields of the referenced document
-//      });  
-  
-//   console.log("User", users);
-    
-    
-
-//     res.send("working...")
-    
-//   } catch (error) {
-//     console.log(error);
-    
-//   }
-// })
 
 
 
