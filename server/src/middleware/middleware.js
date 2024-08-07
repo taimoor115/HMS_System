@@ -7,9 +7,9 @@ import {
   loginValidator,
   userValidator,
 } from "../schema/validation.js";
-import ExpressError from "../lib/utils/ExpressError.js";
-import Admin from "../model/adminModel.js";
-import User from "../model/userModel.js";
+import ExpressError from "../utils/ExpressError.js";
+import Admin from "../models/admin.models.js";
+
 
 export const uploadStorage = multer({
   storage: userStorage,

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 import bcrypt from "bcrypt";
-
+import moment from "moment"
 const userSchema = new Schema({
   name: {
     type: String,
@@ -57,20 +57,22 @@ const userSchema = new Schema({
   ],
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   date_of_birth: {
     type: Date,
   },
   cell_phone: {
-    type: Number,
+    type: String,
   },
   expectedSalary: {
     type: Number,
   },
-  interview_availability: {
+  interview : {
     type: Date,
   },
+
+
   notice_period: {
     type: Number,
   },
