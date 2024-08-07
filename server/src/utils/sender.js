@@ -13,7 +13,7 @@ export const transporter = nodemailer.createTransport({
   });
 
   
-export const sendMail = async (transporter,email,text, subject) => {
+export const sendMail = async (transporter,email, subject, html) => {
     try {
 
         console.log("Hey",process.env.PASSWORD);
@@ -25,7 +25,7 @@ export const sendMail = async (transporter,email,text, subject) => {
     },
         to: email,
         subject,
-        text
+        html
  
 
       });

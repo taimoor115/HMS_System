@@ -1,12 +1,38 @@
 import User from "../models/user.models.js";
+import ExpressError from "../utils/ExpressError.js";
 import { sendMail, transporter } from "../utils/sender.js";
-export const registerUser = async (req, res) => {
+
+export const registerUser = async (req, res, next) => {
     const userData = req.body;
     console.log(userData)
-    
+
+    const selectedDate = new Date(userData.interview);
+    const now = new Date();
+
+
+    if(selectedDate <= now) {
+        return next(new ExpressError(400, "Please selected future date"))
+    }
+
+    if(selectedDate.getHours() < 10 || selectedDate.getHours() >= 19) {
+        return next(new ExpressError(400, "The interview must be in between 10am to 7pm"))
+    }
+
     const uniqueEmail = await User.findOne({email: userData.email})
     if(uniqueEmail) {
       return res.status(400).json({error: "Email must be unique"})
+    }
+
+
+    const users = await User.find({});
+    
+    for (const user of users) {
+        const existingDate = new Date(user.interview)
+        // console.log(existingDate.getTime());
+        // console.log(selectedDate.getTime());
+        if(existingDate.getTime() === selectedDate.getTime()) {
+            return res.status(400).json({error: "This time slot is not available"})
+        }
     }
     
     const imagePath = req.files.profile_picture[0].filename;
@@ -18,7 +44,29 @@ export const registerUser = async (req, res) => {
     await user.save();
     console.log("Eamil ",userData.email);
     
-    await sendMail(transporter,userData.email, "Softmind Solution got your resume", "Hello Candidate")
+    const interviewDateFormatted = selectedDate.toLocaleString(); // or use moment.js for custom formatting
+    const emailSubject = "Softmind Solution Received Your Resume";
+    const html = `
+    Hello Candidate,
+    <p>
+    Thank you for applying with us.
+    </p>
+
+    <p>
+    Your interview has been scheduled on ${interviewDateFormatted}. Please make sure to be available at this time.
+    </p>
+    <p>
+    <b>
+
+    Best Regards,
+
+    <p>
+    Softmind Solution
+    </p>
+    </b></p>`;
+
+    // Send the email
+    await sendMail(transporter, userData.email, emailSubject, html);
 
     return res.json({ message: "User Created successfully..." });
   

@@ -26,7 +26,7 @@ export const userValidator = Joi.object({
   date_of_birth: Joi.date().required(),
   cell_phone: Joi.number().required(),
   expectedSalary: Joi.number().required(),
-  interview_availability: Joi.date().required(),
+  interview: Joi.date().required(),
   notice_period: Joi.number().integer(),
   experience: Joi.array().items(
     Joi.object({
