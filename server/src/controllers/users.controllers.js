@@ -1,7 +1,5 @@
 import User from "../models/user.models.js";
-
-
-
+import { sendMail, transporter } from "../utils/sender.js";
 export const registerUser = async (req, res) => {
     const userData = req.body;
     console.log(userData)
@@ -18,6 +16,9 @@ export const registerUser = async (req, res) => {
 
     const user = new User(userData);
     await user.save();
+    console.log("Eamil ",userData.email);
+    
+    await sendMail(transporter,userData.email, "Softmind Solution got your resume", "Hello Candidate")
 
     return res.json({ message: "User Created successfully..." });
   
