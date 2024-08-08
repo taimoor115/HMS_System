@@ -27,6 +27,11 @@ router.post("/login", validateLogin, wrapAsync(loginUser));
 
 router.get("/getUserProfile/:id", isUser, wrapAsync(getUserProfile));
 
+<<<<<<< HEAD
+=======
+ 
+
+>>>>>>> c9b6e63ba641200fa7952cc50a16dc48f0a2481f
   router.get("/:id/history", isAdmin, wrapAsync(userHistory))
   router.delete("/:id", isAdmin, wrapAsync(deleteUser))
     

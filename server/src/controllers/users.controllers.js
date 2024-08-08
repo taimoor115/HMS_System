@@ -220,6 +220,7 @@ export const getUserProfile = async(req, res, next) => {
   }
 
   return res.status(200).json({ user });
+<<<<<<< HEAD
 } 
 
 
@@ -229,3 +230,6 @@ export const resetPassword = async(req, res, next) => {
   const user = await User.findOne({ email });
   
 }
+=======
+} 
+>>>>>>> c9b6e63ba641200fa7952cc50a16dc48f0a2481f
