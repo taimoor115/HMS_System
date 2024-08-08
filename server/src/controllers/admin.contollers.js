@@ -37,7 +37,7 @@ export const loginAdmin = async (req, res) => {
         return res.status(400).json({ error: "Invalid email and password" });
       }
   
-      const token = generateToken(admin, res);
+      const token = generateToken(admin);
   
       await Admin.findOneAndUpdate(
         { _id: admin._id },

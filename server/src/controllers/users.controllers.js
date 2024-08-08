@@ -1,6 +1,8 @@
 import User from "../models/user.models.js";
 import ExpressError from "../utils/ExpressError.js";
+import { generateToken } from "../utils/generateToken.js";
 import { sendMail, transporter } from "../utils/sender.js";
+import bcrypt from "bcrypt"
 
 export const registerUser = async (req, res, next) => {
     const userData = req.body;
@@ -20,6 +22,7 @@ export const registerUser = async (req, res, next) => {
         return next(new ExpressError(400, "The interview must be in between 10am to 7pm"))
     }
 
+    
     const uniqueEmail = await User.findOne({email: userData.email})
     if(uniqueEmail) {
       return res.status(400).json({error: "Email must be unique"})
@@ -178,4 +181,51 @@ export const deleteUser = async (req,res) => {
 
       return res.status(200).json({message: "User deleted successfully"})
     
+}
+
+
+export const loginUser =async (req,res,next) => {
+  const {email, password} = req.body;
+
+  const user = await User.findOne({email});
+
+  if(!user) {
+    return next(new ExpressError(400, "Invalid email and password"))
+  }
+
+  const matchPassword = await bcrypt.compare(password, user.password);
+
+  if(!matchPassword) {
+    return next(new ExpressError(400, "Invalid email and password"))
+  }
+
+  const token = generateToken(user, res);
+
+  await User.findByIdAndUpdate({ _id: user._id }, { access_token: token }, { runValidators: true, new: true })
+  console.log("Token User", token);
+  
+  return res
+    .status(200)
+    .json({ message: "Login Successfull...", access_token: token });
+}
+
+
+
+export const getUserProfile = async(req, res, next) => { 
+  const { id } = req.params;
+
+  const user = await User.findById(id);
+  if (!user) { 
+    return next(new ExpressError("404","No user found"))
+  }
+
+  return res.status(200).json({ user });
+} 
+
+
+export const resetPassword = async(req, res, next) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  
 }
