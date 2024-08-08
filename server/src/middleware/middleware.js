@@ -9,6 +9,7 @@ import {
 } from "../schema/validation.js";
 import ExpressError from "../utils/ExpressError.js";
 import Admin from "../models/admin.models.js";
+import User from "../models/user.models.js";
 
 
 export const uploadStorage = multer({
@@ -116,4 +117,47 @@ export const isContentWriter = async(req,res, next) => {
       
       return res.status(500).json({error: error});
     }
+}
+
+
+
+
+
+
+
+
+
+export const isUser = async(req,res, next) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[0];
+    console.log("Users Token", token);
+    
+
+    if(!token) {
+      return next(new ExpressError(401, "No token provided"))
+    }
+
+    const decoded = jwt.verify(token, process.env.JSON_WEB_TOKEN_SECRET_KEY);
+
+    if(!decoded) {
+      return res.status(401).json({error: "Token is invalid"});
+    }
+      console.log(decoded);
+      
+    const user = await User.findById(decoded._id);
+
+
+    if(!user || user.access_token !== token) {
+      return res.status(401).json({error: "Token expires"});
+    }
+
+
+    req.user = user
+    
+    next();
+  } catch (error) {
+    console.log(error);
+    
+    return res.status(500).json({error: error});
+  }
 }
