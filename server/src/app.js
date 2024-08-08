@@ -7,6 +7,7 @@ import { MONGO_URL, PORT } from "./config.js";
 import userRouter from "./routes/users.routes.js";
 import ExpressError from "./utils/ExpressError.js";
 import adminRouter from "./routes/admin.routes.js"
+// import slotRouter from "./routes/slot.routes.js"
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.get("/", (req, res) => {
 
 app.use("/users", userRouter);
 app.use("/admin", adminRouter);
+// app.use("/slots", slotRouter);
 
 app.all((req, res, next) => {
   next(new ExpressError("404", "Page not found"));

@@ -9,6 +9,8 @@ export const registerUser = async (req, res, next) => {
     const selectedDate = new Date(userData.interview);
     const now = new Date();
 
+    console.log("User date", selectedDate)
+
 
     if(selectedDate <= now) {
         return next(new ExpressError(400, "Please selected future date"))
@@ -44,7 +46,9 @@ export const registerUser = async (req, res, next) => {
     await user.save();
     console.log("Eamil ",userData.email);
     
-    const interviewDateFormatted = selectedDate.toLocaleString(); // or use moment.js for custom formatting
+    const interviewDateFormatted = selectedDate.toLocaleString(); 
+    console.log(interviewDateFormatted);
+    
     const emailSubject = "Softmind Solution Received Your Resume";
     const html = `
     Hello Candidate,

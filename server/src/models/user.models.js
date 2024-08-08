@@ -68,10 +68,12 @@ const userSchema = new Schema({
   expectedSalary: {
     type: Number,
   },
-  interview : {
-    type: Date,
+  interview_date : {
+      type: Date,
   },
-
+  interview_time: {
+    type:String
+  },
 
   notice_period: {
     type: Number,

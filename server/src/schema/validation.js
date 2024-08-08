@@ -50,3 +50,9 @@ export const loginValidator = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string(),
 });
+
+
+export const slotsValidator = Joi.object({
+  date: Joi.date().required(),
+  time:Joi.string().required()
+})
