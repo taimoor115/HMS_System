@@ -1,3 +1,5 @@
+
+
 import mongoose, { Schema } from "mongoose";
 
 import bcrypt from "bcrypt";
@@ -19,6 +21,9 @@ const userSchema = new Schema({
   password: {
     type: String,
     min: [8, "Password must be greater than 8 characters"],
+  },
+  reset_password_token: {
+      type: String
   },
   education: [
     {
@@ -99,7 +104,14 @@ const userSchema = new Schema({
     type: String,
   },
 
-
+  otpSend: {
+    type: Boolean,
+    default: false,
+  },
+  otpVerify: {
+    type: Boolean,
+    default: false,
+  },
   history: [
     {
       updatedBy: {

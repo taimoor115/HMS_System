@@ -1,3 +1,4 @@
+
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 
 app.use("/users", userRouter);
 app.use("/admin", adminRouter);
+
 // app.use("/slots", slotRouter);
 
 app.all((req, res, next) => {
@@ -46,3 +48,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, (req, res) => {
   console.log(`Server is working on port ${PORT}`);
 });
+
+

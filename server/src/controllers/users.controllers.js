@@ -1,6 +1,7 @@
 import User from "../models/user.models.js";
 import ExpressError from "../utils/ExpressError.js";
 import { generateToken } from "../utils/generateToken.js";
+import { sendOTP, verifyOTP } from "../utils/otp.js";
 import { sendMail, transporter } from "../utils/sender.js";
 import bcrypt from "bcrypt"
 
@@ -213,7 +214,6 @@ export const loginUser =async (req,res,next) => {
 
 export const getUserProfile = async(req, res, next) => { 
   const { id } = req.params;
-
   const user = await User.findById(id);
   if (!user) { 
     return next(new ExpressError("404","No user found"))
@@ -222,10 +222,81 @@ export const getUserProfile = async(req, res, next) => {
   return res.status(200).json({ user });
 } 
 
-
-export const resetPassword = async(req, res, next) => {
+export const sendOTPToUser = async(req, res, next) => {
   const { email } = req.body;
-
+  console.log(email)
   const user = await User.findOne({ email });
+
+  if(!user) {
+    return next(new ExpressError("400", "Email not found"))
+  }
+  const resetPassword_token = generateToken(user)
+  const updatedUser = await User.findByIdAndUpdate(user._id, {reset_password_token: resetPassword_token}, {runValidators: true, new: true})
+
+  console.log("Token", resetPassword_token)
   
+  const response = await sendOTP(user.cell_phone)
+
+  const result = JSON.parse(response);
+
+  console.log("Successmessage", result);
+  
+  console.log(updatedUser);
+  user.otpSend = true;
+  await user.save()
+ 
+  return res.status(200).json({message: "OTP send successfully", updatedUser})
 }
+export const verificationUser = async (req,res,next) => {
+
+  const {reset_password_token} = req.query;
+  const { otp } = req.body;
+  const user = await User.findOne({reset_password_token})
+
+
+  console.log('VerifyOTP', user);
+  
+  
+  if (!reset_password_token || !otp) {
+    return next(new ExpressError(400, "Invalid request"));
+  } 
+  const response = await verifyOTP(user.cell_phone, otp,next);
+   
+  const result = JSON.parse(response);
+  console.log("VERIFIED OTP", result);
+
+  
+  if(!result.valid) {
+    return next(new ExpressError(400, "Enter valid otp"))
+  }
+
+  user.otpVerify = true;
+  await user.save();
+
+  return res.status(200).json({message: "Verfication successfulll"}) 
+}
+
+
+export const resetPassword = async(req,res,next) => {
+
+    const {reset_password_token} = req.query;
+    const {newPassword, confirmPassword} = req.body;
+
+    if(newPassword !== confirmPassword) {
+      return next(new ExpressError(400, "Confirm password must be same as new password"));
+    }
+    const user = await User.findOne({reset_password_token})
+
+    if(!user) {
+      return next(new ExpressError(400, 'Invalid reset token'))
+    }
+
+
+    const password = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(user.id, {password}, {runValidators: true, new: true});
+
+    return res.status(200).json({message: "Password reset Successfully..."})
+ 
+}
+

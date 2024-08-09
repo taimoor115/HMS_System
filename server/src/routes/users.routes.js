@@ -1,8 +1,7 @@
-import express from "express"
-import { deleteUser, editUser, getAllUsers, getUserProfile, loginUser, registerUser, userHistory } from "../controllers/users.controllers.js";
+import express from "express";
+import { deleteUser, editUser, getAllUsers, getUserProfile, loginUser, registerUser, resetPassword, sendOTPToUser, userHistory, verificationUser } from "../controllers/users.controllers.js";
 import { isAdmin, isContentWriter, isUser, uploadStorage, validateLogin, validateUser } from "../middleware/middleware.js";
 import { wrapAsync } from "../utils/wrapAsync.js";
-import { loginValidator } from "../schema/validation.js";
 const router = express.Router()
 
 router.post(
@@ -26,10 +25,19 @@ router.post(
 router.post("/login", validateLogin, wrapAsync(loginUser));
 
 router.get("/getUserProfile/:id", isUser, wrapAsync(getUserProfile));
+router.post("/forgetPassword", wrapAsync(sendOTPToUser))
+router.post("/verifyOTP", wrapAsync(verificationUser))
+router.patch("/resetPassword", wrapAsync(resetPassword))
 
-  router.get("/:id/history", isAdmin, wrapAsync(userHistory))
+router.get("/:id/history", isAdmin, wrapAsync(userHistory))
   router.delete("/:id", isAdmin, wrapAsync(deleteUser))
     
 
 
 export default router;
+
+
+
+
+
+
