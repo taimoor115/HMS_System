@@ -2,7 +2,7 @@
 import mongoose, { Schema } from "mongoose";
 
 import bcrypt from "bcrypt";
-import moment from "moment"
+
 const userSchema = new Schema({
   name: {
     type: String,
@@ -139,5 +139,6 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+
 export default User;
