@@ -220,7 +220,7 @@ export const getUserProfile = async(req, res, next) => {
   }
 
   return res.status(200).json({ user });
-<<<<<<< HEAD
+
 } 
 
 export const sendOTPToUser = async(req, res, next) => {
