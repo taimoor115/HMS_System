@@ -1,3 +1,5 @@
+
+
 import twilio from 'twilio';
 import ExpressError from './ExpressError.js';
 
@@ -42,6 +44,4 @@ export const verifyOTP = async(phoneNo,otp, next) => {
         console.log("VerifyOTP", error);
     }
 }
-
-
 

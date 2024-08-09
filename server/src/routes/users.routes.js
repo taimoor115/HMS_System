@@ -1,44 +1,143 @@
-import express from "express";
-import { deleteUser, editUser, getAllUsers, getUserProfile, loginUser, registerUser, resetPassword, sendOTPToUser, userHistory, verificationUser } from "../controllers/users.controllers.js";
-import { isAdmin, isContentWriter, isUser, uploadStorage, validateLogin, validateUser } from "../middleware/middleware.js";
-import { wrapAsync } from "../utils/wrapAsync.js";
-const router = express.Router()
 
-router.post(
-    "/register",
-    uploadStorage.fields([
-      { name: "profile_picture", maxCount: 1 },
-      { name: "resume", maxCount: 1 },
-    ]),
-    validateUser,
-    wrapAsync(registerUser)
-)
-  
-  router.get("/getAllUser", isAdmin, wrapAsync(getAllUsers));
+import mongoose, { Schema } from "mongoose";
 
-  router.patch("/:id/edit", isContentWriter, uploadStorage.fields([
-    { name: "profile_picture", maxCount: 1 },
-    { name: "resume", maxCount: 1 },
-  ]), wrapAsync(editUser)
-);
-  
-router.post("/login", validateLogin, wrapAsync(loginUser));
+import bcrypt from "bcrypt";
+import moment from "moment"
+const userSchema = new Schema({
+  name: {
+    type: String,
+  },
+  email: {  
+    type: String,
+    lowerCase: true,
+  },
+  profile_picture: {
+    type: String,
+  },
+  about_me: {
+    type: String,
+  },
+  password: {
+    type: String,
+    min: [8, "Password must be greater than 8 characters"],
+  },
+  reset_password_token: {
+      type: String
+  },
+  education: [
+    {
+      degree: {
+        type: String,
+      },
+      end_date: {
+        type: Date,
+      },
+    },
+  ],
+  resume: {
+    type: String,
+  },
+  gender: {
+    type: String,
+    enum: ["Male", "Female", "Prefer not to say"],
+  },
+  city: {
+    type: String,
+  },
+  skills: [String],
+  role: {
+    type: String,
+    default: "user",
+  },
+  social_media: [
+    {
+      name: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  date_of_birth: {
+    type: Date,
+  },
+  cell_phone: {
+    type: String,
+  },
+  expectedSalary: {
+    type: Number,
+  },
+  interview : {
+    type: Date,
+  },
 
-router.get("/getUserProfile/:id", isUser, wrapAsync(getUserProfile));
-router.post("/forgetPassword", wrapAsync(sendOTPToUser))
-router.post("/verifyOTP", wrapAsync(verificationUser))
-router.patch("/resetPassword", wrapAsync(resetPassword))
 
-router.get("/:id/history", isAdmin, wrapAsync(userHistory))
-  router.get("/:id/history", isAdmin, wrapAsync(userHistory))
-  router.delete("/:id", isAdmin, wrapAsync(deleteUser))
-    
+  notice_period: {
+    type: Number,
+  },
+  experience: [
+    {
+      duration: {
+        type: Number,
+      },
+      designation: {
+        type: String,
+      },
+      company: {
+        type: String,
+      },
+      salary: {
+        type: Number,
+      },
+      company_linkedin: {
+        type: String,
+      },
+    },
+  ],
+  access_token: {
+    type: String,
+  },
 
+  otpSend: {
+    type: Boolean,
+    default: false,
+  },
+  otpVerify: {
+    type: Boolean,
+    default: false,
+  },
+  history: [
+    {
+      updatedBy: {
+        type: Schema.Types.ObjectId,
+        ref: "Admin",
+      },
+      updatedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      
+      changedFields: {
+        type: Schema.Types.Mixed
+      }
+    }
+  ]
+});
 
-export default router;
+userSchema.pre("save", async function (next) {
+  try {
+    const hashedPassword = await bcrypt.hash(this.password, 10);
+    this.password = hashedPassword;
+    next();
+  } catch (error) {
+    return next(error);
+  }
+});
 
-
-
-
-
-
+const User = mongoose.model("User", userSchema);
+export default User;

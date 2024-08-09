@@ -1,4 +1,5 @@
 
+
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import "dotenv/config";
@@ -48,5 +49,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, (req, res) => {
   console.log(`Server is working on port ${PORT}`);
 });
-
-
