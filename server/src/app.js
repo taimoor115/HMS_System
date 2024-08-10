@@ -1,7 +1,7 @@
 
 
 import cookieParser from "cookie-parser";
-import cors from "cors";
+
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
@@ -10,6 +10,7 @@ import userRouter from "./routes/users.routes.js";
 import ExpressError from "./utils/ExpressError.js";
 import adminRouter from "./routes/admin.routes.js"
 // import slotRouter from "./routes/slot.routes.js"
+import cors from "cors"
 
 const app = express();
 
@@ -20,6 +21,12 @@ main()
 async function main() {
   await mongoose.connect(MONGO_URL);
 }
+
+app.use(cors({
+  origin:process.env.CORS_ORIGIN,
+  credentials: true
+}))
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
